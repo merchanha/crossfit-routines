@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: crossfit-postgres
+    environment:
+      POSTGRES_DB: crossfit_pro
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - crossfit-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: crossfit-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@crossfit.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+    depends_on:
+      - postgres
+    networks:
+      - crossfit-network
+
+volumes:
+  postgres_data:
+
+networks:
+  crossfit-network:
+    driver: bridge
