@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Patch,
+  Put,
   Param,
   Delete,
   UseGuards,
@@ -108,7 +109,7 @@ export class RoutinesController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update routine by ID' })
+  @ApiOperation({ summary: 'Update routine by ID (partial)' })
   @ApiParam({ name: 'id', description: 'Routine ID' })
   @ApiResponse({
     status: 200,
@@ -124,6 +125,30 @@ export class RoutinesController {
     description: 'Validation failed',
   })
   async update(
+    @Param('id') id: string,
+    @Body() updateRoutineDto: UpdateRoutineDto,
+    @UserId() userId: string,
+  ): Promise<Routine> {
+    return this.routinesService.update(id, updateRoutineDto, userId);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update routine by ID (complete)' })
+  @ApiParam({ name: 'id', description: 'Routine ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Routine updated successfully',
+    type: Routine,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Routine not found',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation failed',
+  })
+  async put(
     @Param('id') id: string,
     @Body() updateRoutineDto: UpdateRoutineDto,
     @UserId() userId: string,

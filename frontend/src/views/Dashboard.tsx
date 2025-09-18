@@ -98,29 +98,67 @@ export function Dashboard() {
           <div className="space-y-4">
             {todayWorkouts.map((workout) => (
               <div key={workout.id} className="bg-gray-700 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {workout.routine?.name}
-                </h3>
-                <p className="text-gray-300 mb-4">
-                  {workout.routine?.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <span className="text-sm text-gray-400">
-                      {workout.routine?.exercises.length} exercises
-                    </span>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      workout.completed 
-                        ? 'bg-emerald-500 text-white' 
-                        : 'bg-gray-600 text-gray-300'
-                    }`}>
-                      {workout.completed ? 'Completed' : 'Scheduled'}
-                    </span>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      {workout.routine?.name}
+                    </h3>
+                    <p className="text-gray-300 mb-3">
+                      {workout.routine?.description}
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm text-gray-400 mb-4">
+                      <span>{workout.routine?.exercises?.length || 0} exercises</span>
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        workout.completed 
+                          ? 'bg-emerald-500 text-white' 
+                          : 'bg-gray-600 text-gray-300'
+                      }`}>
+                        {workout.completed ? 'Completed' : 'Scheduled'}
+                      </span>
+                    </div>
                   </div>
                   <Button variant="primary" size="sm">
                     {workout.completed ? 'View Details' : 'Start Workout'}
                   </Button>
                 </div>
+
+                {/* Exercise Details */}
+                {workout.routine && workout.routine.exercises && workout.routine.exercises.length > 0 && (
+                  <div className="border-t border-gray-600 pt-4">
+                    <h4 className="text-sm font-medium text-gray-300 mb-3">Exercise Details</h4>
+                    <div className="space-y-2">
+                      {workout.routine.exercises.map((exercise, index) => (
+                        <div key={exercise.id || index} className="bg-gray-600 rounded-lg p-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h5 className="font-medium text-white text-sm">
+                                {exercise.name}
+                              </h5>
+                              {(exercise.sets || exercise.reps || exercise.duration) && (
+                                <div className="flex items-center space-x-4 mt-1 text-xs text-gray-400">
+                                  {exercise.sets && (
+                                    <span>{exercise.sets} sets</span>
+                                  )}
+                                  {exercise.reps && (
+                                    <span>{exercise.reps} reps</span>
+                                  )}
+                                  {exercise.duration && (
+                                    <span>{exercise.duration}</span>
+                                  )}
+                                </div>
+                              )}
+                              {exercise.notes && (
+                                <p className="text-xs text-gray-400 mt-1 italic">
+                                  {exercise.notes}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
