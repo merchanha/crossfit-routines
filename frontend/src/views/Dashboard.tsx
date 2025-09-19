@@ -82,14 +82,15 @@ export function Dashboard() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-6 bg-gray-500">
           <div className="flex items-center space-x-4">
             <div className="p-3 bg-red-500 rounded-lg">
               <Flame className="w-6 h-6 text-white" />
             </div>
             <div>
               <p className="text-gray-400 text-sm">Current Streak</p>
-              <p className="text-2xl font-bold text-white">{stats.streak}</p>
+              <p className="text-gray-400 text-sm">Not available</p>
+              {/* <p className="text-2xl font-bold text-white">{stats.streak}</p> */}
             </div>
           </div>
         </Card>
@@ -129,7 +130,7 @@ export function Dashboard() {
                     </div>
                   </div>
                    <Button 
-                     variant="primary" 
+                     variant={workout.completed ? 'danger' : 'primary'} 
                      size="sm"
                      onClick={() => {
                        if (workout.completed) {

@@ -220,14 +220,15 @@ export function ProfileView() {
             </div>
           </Card>
 
-          <Card className="p-4">
+          <Card className="p-4 bg-gray-500">
             <div className="flex items-center space-x-3 mb-2">
               <div className="p-2 bg-red-500 rounded-lg">
                 <Flame className="w-4 h-4 text-white" />
               </div>
               <div>
                 <p className="text-sm text-gray-400">Current Streak</p>
-                <p className="text-xl font-bold text-white">{stats.currentStreak} days</p>
+                {/* <p className="text-xl font-bold text-white">{stats.currentStreak} days</p> */}
+                <p className="text-gray-400 text-sm">Not available</p>
               </div>
             </div>
           </Card>
