@@ -3,10 +3,11 @@ import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import { Card, Button, ScheduleWorkoutModal, WorkoutDetailsPanel } from '../components';
 import { useScheduledWorkoutsContext } from '../contexts/ScheduledWorkoutsContext';
-import { useRoutines } from '../hooks/useApi';
+import { useRoutinesContext } from '../contexts/RoutinesContext';
 
 export function CalendarView() {
   const { getWorkoutsForDate, scheduledWorkouts } = useScheduledWorkoutsContext();
+  const { routines } = useRoutinesContext();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -21,7 +22,15 @@ export function CalendarView() {
   const monthEnd = endOfMonth(currentDate);
   const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  const selectedDateWorkouts = selectedDate ? getWorkoutsForDate(selectedDate) : [];
+  // Merge fresh routine data with selected date workouts to avoid stale data
+  const rawSelectedDateWorkouts = selectedDate ? getWorkoutsForDate(selectedDate) : [];
+  const selectedDateWorkouts = rawSelectedDateWorkouts.map((workout: any) => {
+    const freshRoutine = routines.find(r => r.id === workout.routineId);
+    return {
+      ...workout,
+      routine: freshRoutine || workout.routine // Use fresh routine data if available
+    };
+  });
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1));
@@ -91,7 +100,14 @@ export function CalendarView() {
             {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-2" key={`calendar-${scheduledWorkouts.length}-${scheduledWorkouts.map(w => w.id).join('-')}`}>
               {calendarDays.map(day => {
-                const dayWorkouts = getWorkoutsForDate(day);
+                const rawDayWorkouts = getWorkoutsForDate(day);
+                const dayWorkouts = rawDayWorkouts.map((workout: any) => {
+                  const freshRoutine = routines.find(r => r.id === workout.routineId);
+                  return {
+                    ...workout,
+                    routine: freshRoutine || workout.routine
+                  };
+                });
                 const isSelected = selectedDate && isSameDay(day, selectedDate);
                 const isToday = isSameDay(day, new Date());
                 

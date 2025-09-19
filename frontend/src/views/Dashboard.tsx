@@ -1,18 +1,30 @@
+import { useNavigate } from 'react-router-dom';
 import { BookOpen, Calendar, Clock, Flame, TrendingUp } from 'lucide-react';
 import { Card, Button } from '../components';
 import { useScheduledWorkoutsContext } from '../contexts/ScheduledWorkoutsContext';
-import { useRoutines } from '../hooks/useApi';
+import { useRoutinesContext } from '../contexts/RoutinesContext';
 
 export function Dashboard() {
+  const navigate = useNavigate();
   const { getWorkoutsForWeek } = useScheduledWorkoutsContext();
-  const { routines } = useRoutines();
+  const { routines } = useRoutinesContext();
 
   const today = new Date();
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - today.getDay());
   
   const weekWorkouts = getWorkoutsForWeek(startOfWeek);
-  const todayWorkouts = weekWorkouts.filter((workout:any) => {
+  
+  // Merge fresh routine data with scheduled workouts to avoid stale data
+  const workoutsWithFreshRoutines = weekWorkouts.map((workout: any) => {
+    const freshRoutine = routines.find(r => r.id === workout.routineId);
+    return {
+      ...workout,
+      routine: freshRoutine || workout.routine // Use fresh routine data if available
+    };
+  });
+  
+  const todayWorkouts = workoutsWithFreshRoutines.filter((workout:any) => {
     // Use local date formatting to avoid timezone issues (same as Calendar)
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, "0");
@@ -116,9 +128,21 @@ export function Dashboard() {
                       </span>
                     </div>
                   </div>
-                  <Button variant="primary" size="sm">
-                    {workout.completed ? 'View Details' : 'Start Workout'}
-                  </Button>
+                   <Button 
+                     variant="primary" 
+                     size="sm"
+                     onClick={() => {
+                       if (workout.completed) {
+                         // Could navigate to workout details/history
+                         navigate(`/routines/${workout.routineId}`);
+                       } else {
+                         // Start workout session
+                         navigate(`/workout/${workout.id}`);
+                       }
+                     }}
+                   >
+                     {workout.completed ? 'View Details' : 'Start Workout'}
+                   </Button>
                 </div>
 
                 {/* Exercise Details */}
@@ -184,7 +208,7 @@ export function Dashboard() {
           {Array.from({ length: 7 }, (_, i) => {
             const date = new Date(startOfWeek);
             date.setDate(startOfWeek.getDate() + i);
-            const dayWorkouts = weekWorkouts.filter((workout:any) => {
+            const dayWorkouts = workoutsWithFreshRoutines.filter((workout:any) => {
               // Use local date formatting to avoid timezone issues (same as Calendar)
               const year = date.getFullYear();
               const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -211,11 +235,18 @@ export function Dashboard() {
                     {dayWorkouts.map((workout:any) => (
                       <div 
                         key={workout.id}
-                        className={`p-2 rounded text-xs text-center ${
+                        className={`p-2 rounded text-xs text-center cursor-pointer transition-colors ${
                           workout.completed
-                            ? 'bg-emerald-500 text-white'
-                            : 'bg-gray-600 text-gray-300'
+                            ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                            : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                         }`}
+                        onClick={() => {
+                          if (workout.completed) {
+                            navigate(`/routines/${workout.routineId}`);
+                          } else {
+                            navigate(`/workout/${workout.id}`);
+                          }
+                        }}
                       >
                         {workout.routine?.name}
                       </div>

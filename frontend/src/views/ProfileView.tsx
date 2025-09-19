@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { User, Edit3, Trophy, Calendar, Flame, Target } from 'lucide-react';
 import { Card, Button, Input } from '../components';
-import { useUser, useRoutines } from '../hooks/useApi';
+import { useUser } from '../hooks/useApi';
+import { useRoutinesContext } from '../contexts/RoutinesContext';
 import { useScheduledWorkoutsContext } from '../contexts/ScheduledWorkoutsContext';
 import { ScheduledWorkout } from '../types';
 
 export function ProfileView() {
   const { user, updateUser, isLoading: userLoading } = useUser();
-  const { routines } = useRoutines();
+  const { routines } = useRoutinesContext();
   const { scheduledWorkouts } = useScheduledWorkoutsContext();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({

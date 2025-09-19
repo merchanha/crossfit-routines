@@ -5,7 +5,7 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { useScheduledWorkoutsContext } from '../../contexts/ScheduledWorkoutsContext';
-import { useRoutines } from '../../hooks/useApi';
+import { useRoutinesContext } from '../../contexts/RoutinesContext';
 import { Routine } from '../../types';
 
 interface ScheduleWorkoutModalProps {
@@ -15,7 +15,7 @@ interface ScheduleWorkoutModalProps {
 }
 
 export function ScheduleWorkoutModal({ isOpen, onClose, selectedDate }: ScheduleWorkoutModalProps) {
-  const { routines } = useRoutines();
+  const { routines } = useRoutinesContext();
   const { scheduleWorkout } = useScheduledWorkoutsContext();
   const [selectedRoutine, setSelectedRoutine] = useState<Routine | null>(null);
   const [scheduleDate, setScheduleDate] = useState(selectedDate || new Date());
