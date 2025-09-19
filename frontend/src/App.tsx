@@ -4,7 +4,7 @@ import { AuthProvider, useAuthContext } from './contexts/AuthContext';
 import { RoutinesProvider } from './contexts/RoutinesContext';
 import { ScheduledWorkoutsProvider } from './contexts/ScheduledWorkoutsContext';
 import { Sidebar, MobileHeader, ProtectedRoute } from './components';
-import { AuthView, Dashboard, RoutinesLibrary, CalendarView, ProfileView } from './views';
+import { AuthView, Dashboard, RoutinesLibrary, RoutineDetailView, CalendarView, ProfileView } from './views';
 
 function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -17,7 +17,9 @@ function AppContent() {
       case '/routines': return 'Routines';
       case '/calendar': return 'Calendar';
       case '/profile': return 'Profile';
-      default: return 'CrossFit Pro';
+      default: 
+        if (pathname.startsWith('/routines/')) return 'Routine Details';
+        return 'CrossFit Pro';
     }
   };
 
@@ -57,6 +59,7 @@ function AppContent() {
               <Routes>
                 <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/routines" element={<ProtectedRoute><RoutinesLibrary /></ProtectedRoute>} />
+                <Route path="/routines/:id" element={<ProtectedRoute><RoutineDetailView /></ProtectedRoute>} />
                 <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><ProfileView /></ProtectedRoute>} />
                 <Route path="/login" element={<AuthView />} />

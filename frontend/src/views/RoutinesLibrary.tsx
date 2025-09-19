@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Search, Plus, Play, Edit3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Plus, Play, Edit3, Eye } from 'lucide-react';
 import { Card, Button, Input, CreateEditRoutineModal } from '../components';
 import { useRoutinesContext } from '../contexts/RoutinesContext';
 import { Routine } from '../types';
@@ -9,6 +10,7 @@ interface RoutinesLibraryProps {
 }
 
 export function RoutinesLibrary({ onRoutineSelect }: RoutinesLibraryProps) {
+  const navigate = useNavigate();
   const { routines } = useRoutinesContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -108,7 +110,7 @@ export function RoutinesLibrary({ onRoutineSelect }: RoutinesLibraryProps) {
                 </div>
 
                 {/* Exercises Preview */}
-                <div className="space-y-2">
+                <div className="space-y-2 mb-4">
                   <p className="text-xs font-medium text-gray-400 uppercase">
                     Exercises Preview
                   </p>
@@ -131,6 +133,16 @@ export function RoutinesLibrary({ onRoutineSelect }: RoutinesLibraryProps) {
                     )}
                   </div>
                 </div>
+
+                {/* Action Button */}
+                <Button
+                  variant="primary"
+                  icon={Eye}
+                  onClick={() => navigate(`/routines/${routine.id}`)}
+                  className="w-full"
+                >
+                  View Details
+                </Button>
               </div>
             </Card>
           ))}

@@ -172,7 +172,7 @@ export function useScheduledWorkouts() {
       const workoutsData = await api.scheduledWorkouts.getAll();
 
       // Normalize date formats to ensure consistency
-      const normalizedWorkouts = workoutsData.map((workout) => ({
+      const normalizedWorkouts = workoutsData.map((workout: any) => ({
         ...workout,
         date: workout.date.includes("T")
           ? workout.date.split("T")[0]
@@ -201,7 +201,7 @@ export function useScheduledWorkouts() {
     async (routineId: string, date: Date, notes?: string) => {
       try {
         setError(null);
-        const newScheduledWorkout = await api.scheduledWorkouts.schedule(
+        const newScheduledWorkout: any = await api.scheduledWorkouts.schedule(
           routineId,
           date,
           notes
@@ -307,7 +307,7 @@ export function useScheduledWorkouts() {
       const day = String(date.getDate()).padStart(2, "0");
       const dateStr = `${year}-${month}-${day}`;
 
-      const filteredWorkouts = scheduledWorkouts.filter((workout) => {
+      const filteredWorkouts = scheduledWorkouts.filter((workout: any) => {
         // Handle both date formats from backend
         let workoutDate = workout.date;
 
@@ -340,7 +340,7 @@ export function useScheduledWorkouts() {
       const startStr = formatDate(startDate);
       const endStr = formatDate(endDate);
 
-      return scheduledWorkouts.filter((workout) => {
+      return scheduledWorkouts.filter((workout: any) => {
         // Handle both date formats from backend
         let workoutDate = workout.date;
 

@@ -3,6 +3,7 @@ import { User, Edit3, Trophy, Calendar, Flame, Target } from 'lucide-react';
 import { Card, Button, Input } from '../components';
 import { useUser, useRoutines } from '../hooks/useApi';
 import { useScheduledWorkoutsContext } from '../contexts/ScheduledWorkoutsContext';
+import { ScheduledWorkout } from '../types';
 
 export function ProfileView() {
   const { user, updateUser, isLoading: userLoading } = useUser();
@@ -31,7 +32,7 @@ export function ProfileView() {
   const stats = {
     totalRoutines: routines.length,
     totalWorkouts: scheduledWorkouts.length,
-    completedWorkouts: scheduledWorkouts.filter(w => w.completed).length,
+    completedWorkouts: scheduledWorkouts.filter((w:ScheduledWorkout) => w.completed).length,
     currentStreak: user?.stats?.currentStreak || 7,
     joinedDaysAgo: user ? Math.floor((new Date().getTime() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)) : 0
   };

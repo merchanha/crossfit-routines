@@ -15,7 +15,7 @@ interface ScheduledWorkoutsContextType {
   refetch: () => Promise<void>;
 }
 
-const ScheduledWorkoutsContext = createContext<ScheduledWorkoutsContextType | undefined>(undefined);
+const ScheduledWorkoutsContext = createContext<ScheduledWorkoutsContextType | any>(undefined);
 
 interface ScheduledWorkoutsProviderProps {
   children: ReactNode;

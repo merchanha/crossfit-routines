@@ -1,4 +1,3 @@
-import React from 'react';
 import { BookOpen, Calendar, Clock, Flame, TrendingUp } from 'lucide-react';
 import { Card, Button } from '../components';
 import { useScheduledWorkoutsContext } from '../contexts/ScheduledWorkoutsContext';
@@ -13,7 +12,7 @@ export function Dashboard() {
   startOfWeek.setDate(today.getDate() - today.getDay());
   
   const weekWorkouts = getWorkoutsForWeek(startOfWeek);
-  const todayWorkouts = weekWorkouts.filter(workout => {
+  const todayWorkouts = weekWorkouts.filter((workout:any) => {
     // Use local date formatting to avoid timezone issues (same as Calendar)
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, "0");
@@ -27,7 +26,7 @@ export function Dashboard() {
   const stats = {
     totalRoutines: routines.length,
     weeklyWorkouts: weekWorkouts.length,
-    completedThisWeek: weekWorkouts.filter(w => w.completed).length,
+    completedThisWeek: weekWorkouts.filter((w:any) => w.completed).length,
     streak: 7 // This would be calculated based on actual completion data
   };
 
@@ -96,7 +95,7 @@ export function Dashboard() {
 
         {todayWorkouts.length > 0 ? (
           <div className="space-y-4">
-            {todayWorkouts.map((workout) => (
+            {todayWorkouts.map((workout:any) => (
               <div key={workout.id} className="bg-gray-700 rounded-lg p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -127,7 +126,7 @@ export function Dashboard() {
                   <div className="border-t border-gray-600 pt-4">
                     <h4 className="text-sm font-medium text-gray-300 mb-3">Exercise Details</h4>
                     <div className="space-y-2">
-                      {workout.routine.exercises.map((exercise, index) => (
+                      {workout.routine.exercises.map((exercise:any, index:any) => (
                         <div key={exercise.id || index} className="bg-gray-600 rounded-lg p-3">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -185,7 +184,7 @@ export function Dashboard() {
           {Array.from({ length: 7 }, (_, i) => {
             const date = new Date(startOfWeek);
             date.setDate(startOfWeek.getDate() + i);
-            const dayWorkouts = weekWorkouts.filter(workout => {
+            const dayWorkouts = weekWorkouts.filter((workout:any) => {
               // Use local date formatting to avoid timezone issues (same as Calendar)
               const year = date.getFullYear();
               const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -209,7 +208,7 @@ export function Dashboard() {
                 
                 {dayWorkouts.length > 0 ? (
                   <div className="space-y-2">
-                    {dayWorkouts.map((workout) => (
+                    {dayWorkouts.map((workout:any) => (
                       <div 
                         key={workout.id}
                         className={`p-2 rounded text-xs text-center ${

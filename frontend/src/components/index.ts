@@ -8,6 +8,7 @@ export { Card } from "./ui/Card";
 export { Input } from "./ui/Input";
 export { Modal } from "./ui/Modal";
 export { TextArea } from "./ui/TextArea";
+export { Toast, useToast } from "./ui/Toast";
 
 // Auth Components
 export { LoginForm } from "./auth/LoginForm";
