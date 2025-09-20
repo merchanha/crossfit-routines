@@ -47,7 +47,6 @@ export interface Exercise {
   name: string;
   sets?: number;
   reps?: number;
-  duration?: string;
   notes?: string;
 }
 
@@ -56,6 +55,7 @@ export interface Routine {
   name: string;
   description: string;
   videoUrl?: string;
+  estimatedDuration?: number; // Estimated duration in minutes
   exercises: Exercise[];
   createdAt: Date;
   updatedAt: Date;
@@ -68,6 +68,7 @@ export interface ScheduledWorkout {
   date: Date;
   notes?: string;
   completed: boolean;
+  finalDuration?: number; // Final duration in seconds when completed
   routine?: Routine;
 }
 

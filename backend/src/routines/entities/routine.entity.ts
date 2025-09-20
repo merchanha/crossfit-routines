@@ -16,6 +16,9 @@ export class Routine extends BaseEntity {
   @Column({ nullable: true })
   videoUrl?: string;
 
+  @Column({ nullable: true })
+  estimatedDuration?: number; // Estimated duration in minutes
+
   @Column('jsonb')
   exercises: Exercise[];
 

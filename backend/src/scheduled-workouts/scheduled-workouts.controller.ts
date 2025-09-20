@@ -213,6 +213,11 @@ export class ScheduledWorkoutsController {
   @ApiOperation({ summary: 'Mark workout as completed' })
   @ApiParam({ name: 'id', description: 'Scheduled workout ID' })
   @ApiQuery({ name: 'notes', required: false, description: 'Completion notes' })
+  @ApiQuery({
+    name: 'finalDuration',
+    required: false,
+    description: 'Final workout duration in seconds',
+  })
   @ApiResponse({
     status: 200,
     description: 'Workout marked as completed',
@@ -225,9 +230,15 @@ export class ScheduledWorkoutsController {
   async markCompleted(
     @Param('id') id: string,
     @Query('notes') notes: string,
+    @Query('finalDuration') finalDuration: number,
     @UserId() userId: string,
   ): Promise<ScheduledWorkout> {
-    return this.scheduledWorkoutsService.markCompleted(id, userId, notes);
+    return this.scheduledWorkoutsService.markCompleted(
+      id,
+      userId,
+      notes,
+      finalDuration,
+    );
   }
 
   @Delete(':id')

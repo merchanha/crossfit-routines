@@ -130,9 +130,9 @@ export function WorkoutDetailsPanel({ date, workouts, onScheduleMore }: WorkoutD
                         <div key={index} className="flex justify-between text-sm">
                           <span className="text-gray-300">{exercise.name}</span>
                           <span className="text-gray-500">
-                            {exercise.sets && exercise.reps 
+                            {exercise.sets && exercise.reps
                               ? `${exercise.sets}x${exercise.reps}`
-                              : exercise.duration || 'N/A'
+                              : 'N/A'
                             }
                           </span>
                         </div>

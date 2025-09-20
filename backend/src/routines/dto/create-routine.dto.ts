@@ -51,15 +51,6 @@ export class ExerciseDto {
   reps?: number;
 
   @ApiProperty({
-    description: 'Exercise duration',
-    example: '30 seconds',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  duration?: string;
-
-  @ApiProperty({
     description: 'Exercise notes',
     example: 'Keep your back straight',
     required: false,
@@ -95,6 +86,17 @@ export class CreateRoutineDto {
   @IsOptional()
   @IsString()
   videoUrl?: string;
+
+  @ApiProperty({
+    description: 'Estimated duration in minutes',
+    example: 30,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(300)
+  estimatedDuration?: number;
 
   @ApiProperty({
     description: 'List of exercises in the routine',

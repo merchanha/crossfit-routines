@@ -106,7 +106,7 @@ export function RoutinesLibrary({ onRoutineSelect }: RoutinesLibraryProps) {
                 {/* Stats */}
                 <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
                   <span>{routine.exercises.length} exercises</span>
-                  <span>{new Date(routine.updatedAt).toLocaleDateString()}</span>
+                  <span>{routine.estimatedDuration ? `~${routine.estimatedDuration} min` : 'Duration not set'}</span>
                 </div>
 
                 {/* Exercises Preview */}
@@ -121,7 +121,7 @@ export function RoutinesLibrary({ onRoutineSelect }: RoutinesLibraryProps) {
                         <span className="text-gray-500">
                           {exercise.sets && exercise.reps 
                             ? `${exercise.sets}x${exercise.reps}`
-                            : exercise.duration || 'N/A'
+                            : 'N/A'
                           }
                         </span>
                       </div>

@@ -159,19 +159,16 @@ export function Dashboard() {
                               <h5 className="font-medium text-white text-sm">
                                 {exercise.name}
                               </h5>
-                              {(exercise.sets || exercise.reps || exercise.duration) && (
-                                <div className="flex items-center space-x-4 mt-1 text-xs text-gray-400">
-                                  {exercise.sets && (
-                                    <span>{exercise.sets} sets</span>
-                                  )}
-                                  {exercise.reps && (
-                                    <span>{exercise.reps} reps</span>
-                                  )}
-                                  {exercise.duration && (
-                                    <span>{exercise.duration}</span>
-                                  )}
-                                </div>
-                              )}
+                               {(exercise.sets || exercise.reps) && (
+                                 <div className="flex items-center space-x-4 mt-1 text-xs text-gray-400">
+                                   {exercise.sets && (
+                                     <span>{exercise.sets} sets</span>
+                                   )}
+                                   {exercise.reps && (
+                                     <span>{exercise.reps} reps</span>
+                                   )}
+                                 </div>
+                               )}
                               {exercise.notes && (
                                 <p className="text-xs text-gray-400 mt-1 italic">
                                   {exercise.notes}

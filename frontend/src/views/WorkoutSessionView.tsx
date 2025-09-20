@@ -4,25 +4,15 @@ import {
   ArrowLeft, 
   Play, 
   Pause, 
-  SkipForward, 
-  SkipBack, 
-  CheckCircle, 
-  Circle, 
-  Clock,
+  RotateCcw,
   Target,
   FileText,
-  Trophy
+  Trophy,
+  Timer
 } from 'lucide-react';
-import { Card, Button, useToast } from '../components';
+import { Card, Button, useToast, TextArea } from '../components';
 import { useScheduledWorkoutsContext } from '../contexts/ScheduledWorkoutsContext';
 import { useRoutinesContext } from '../contexts/RoutinesContext';
-
-interface ExerciseProgress {
-  exerciseIndex: number;
-  completedSets: number;
-  totalSets: number;
-  notes: string;
-}
 
 export function WorkoutSessionView() {
   const { workoutId } = useParams<{ workoutId: string }>();
@@ -32,11 +22,11 @@ export function WorkoutSessionView() {
   const { showToast, ToastContainer } = useToast();
 
   // Session state
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [exerciseProgress, setExerciseProgress] = useState<ExerciseProgress[]>([]);
+  const [sessionNotes, setSessionNotes] = useState('');
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [workoutStarted, setWorkoutStarted] = useState(false);
 
   // Find the workout and routine
   const workout = useMemo(() => {
@@ -45,21 +35,10 @@ export function WorkoutSessionView() {
 
   const routine = useMemo(() => {
     if (!workout) return null;
-    return routines.find(r => r.id === workout.routineId);
+    // Use fresh routine data from context to avoid stale data
+    const freshRoutine = routines.find(r => r.id === workout.routineId);
+    return freshRoutine || workout.routine;
   }, [workout, routines]);
-
-  // Initialize exercise progress
-  useEffect(() => {
-    if (routine?.exercises) {
-      const initialProgress = routine.exercises.map((exercise, index) => ({
-        exerciseIndex: index,
-        completedSets: 0,
-        totalSets: exercise.sets || 1,
-        notes: ''
-      }));
-      setExerciseProgress(initialProgress);
-    }
-  }, [routine]);
 
   // Timer effect
   useEffect(() => {
@@ -73,68 +52,49 @@ export function WorkoutSessionView() {
   }, [isTimerRunning]);
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const currentExercise = routine?.exercises[currentExerciseIndex];
-  const currentProgress = exerciseProgress[currentExerciseIndex];
-
-  const totalExercises = routine?.exercises.length || 0;
-  const completedExercises = exerciseProgress.filter(p => p.completedSets >= p.totalSets).length;
-  const overallProgress = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
-
-  const handleSetComplete = () => {
-    if (!currentProgress) return;
-    
-    setExerciseProgress(prev => 
-      prev.map(p => 
-        p.exerciseIndex === currentExerciseIndex
-          ? { ...p, completedSets: Math.min(p.completedSets + 1, p.totalSets) }
-          : p
-      )
-    );
-
-    // Auto-advance to next exercise if current one is completed
-    if (currentProgress.completedSets + 1 >= currentProgress.totalSets) {
-      if (currentExerciseIndex < totalExercises - 1) {
-        setTimeout(() => {
-          setCurrentExerciseIndex(prev => prev + 1);
-          showToast('Exercise completed! Moving to next.', 'success', 2000);
-        }, 1000);
-      } else {
-        showToast('All exercises completed! 🎉', 'success');
-      }
-    }
+  const handleStartWorkout = () => {
+    setWorkoutStarted(true);
+    setIsTimerRunning(true);
+    showToast('Workout started! Good luck! 💪', 'success', 2000);
   };
 
-  const handleSetUndo = () => {
-    if (!currentProgress) return;
-    
-    setExerciseProgress(prev => 
-      prev.map(p => 
-        p.exerciseIndex === currentExerciseIndex
-          ? { ...p, completedSets: Math.max(p.completedSets - 1, 0) }
-          : p
-      )
-    );
+  const handlePauseResume = () => {
+    setIsTimerRunning(!isTimerRunning);
+    showToast(isTimerRunning ? 'Timer paused' : 'Timer resumed', 'info', 1500);
   };
 
+  const handleResetTimer = () => {
+    setTimerSeconds(0);
+    setIsTimerRunning(false);
+    showToast('Timer reset to 00:00', 'info', 1500);
+  };
 
   const handleCompleteWorkout = async () => {
     if (!workout) return;
 
     setIsCompleting(true);
     try {
-      const finalNotes = [
-        ...exerciseProgress
-          .filter(p => p.notes.trim())
-          .map(p => `${routine?.exercises[p.exerciseIndex]?.name}: ${p.notes}`)
-      ].filter(Boolean).join('\n\n');
+      // Stop the timer
+      setIsTimerRunning(false);
+      
+      // Prepare final notes with workout duration
+      const durationNote = `Workout Duration: ${formatTime(timerSeconds)}`;
+      const finalNotes = [durationNote, sessionNotes].filter(Boolean).join('\n\n');
 
-      await markWorkoutCompleted(workout.id, finalNotes);
-      showToast('Workout completed! Great job! 🎉', 'success');
+      // Update the workout with completion status and final duration
+      await markWorkoutCompleted(workout.id, finalNotes, timerSeconds);
+      
+      showToast(`Workout completed in ${formatTime(timerSeconds)}! Great job! 🎉`, 'success');
       
       // Navigate back to dashboard after a short delay
       setTimeout(() => {
@@ -145,10 +105,6 @@ export function WorkoutSessionView() {
       setIsCompleting(false);
     }
   };
-
-  const isWorkoutComplete = completedExercises === totalExercises;
-  const canGoNext = currentExerciseIndex < totalExercises - 1;
-  const canGoPrevious = currentExerciseIndex > 0;
 
   if (!workout || !routine) {
     return (
@@ -181,166 +137,189 @@ export function WorkoutSessionView() {
               />
               <div>
                 <h1 className="text-2xl font-bold">{routine.name}</h1>
-                <p className="text-gray-400">Exercise {currentExerciseIndex + 1} of {totalExercises}</p>
+                <p className="text-gray-400">{routine.exercises.length} exercises</p>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className="text-sm text-gray-400">Session Time</div>
-                <div className="text-xl font-mono">{formatTime(timerSeconds)}</div>
-              </div>
-              <Button
-                variant={isTimerRunning ? "secondary" : "primary"}
-                size="sm"
-                icon={isTimerRunning ? Pause : Play}
-                onClick={() => setIsTimerRunning(!isTimerRunning)}
-              />
             </div>
           </div>
 
-          {/* Progress Bar */}
+          {/* Timer Card */}
           <Card>
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-300">Overall Progress</span>
-                <span className="text-sm text-gray-400">{completedExercises}/{totalExercises} exercises</span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-2">
-                <div 
-                  className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${overallProgress}%` }}
-                />
-              </div>
-            </div>
-          </Card>
-
-          {/* Current Exercise */}
-          <Card>
-            <div className="p-6">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-white">{currentExerciseIndex + 1}</span>
+            <div className="p-8 text-center">
+              <div className="mb-6">
+                <div className="w-32 h-32 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-500">
+                  <div className="text-center">
+                    <Timer className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                    <div className="text-2xl font-mono font-bold text-white">
+                      {formatTime(timerSeconds)}
+                    </div>
+                  </div>
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-2">{currentExercise?.name}</h2>
                 
-                <div className="flex items-center justify-center gap-6 text-gray-400">
-                  {currentExercise?.sets && (
-                    <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4" />
-                      <span>{currentExercise.sets} sets</span>
-                    </div>
-                  )}
-                  {currentExercise?.reps && (
-                    <div className="flex items-center gap-2">
-                      <span>{currentExercise.reps} reps</span>
-                    </div>
-                  )}
-                  {currentExercise?.duration && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      <span>{currentExercise.duration}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Set Tracking */}
-              {currentProgress && (
-                <div className="mb-6">
-                  <div className="flex items-center justify-center gap-2 mb-4">
-                    {Array.from({ length: currentProgress.totalSets }, (_, i) => (
-                      <div
-                        key={i}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${
-                          i < currentProgress.completedSets
-                            ? 'bg-emerald-500 border-emerald-500 text-white'
-                            : 'border-gray-600 text-gray-400'
-                        }`}
-                      >
-                        {i < currentProgress.completedSets ? (
-                          <CheckCircle className="w-4 h-4" />
-                        ) : (
-                          <Circle className="w-4 h-4" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="text-center mb-4">
-                    <span className="text-lg">
-                      Set {currentProgress.completedSets + 1} of {currentProgress.totalSets}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-center gap-4">
-                    <Button
-                      variant="ghost"
-                      onClick={handleSetUndo}
-                      disabled={currentProgress.completedSets === 0}
-                      className="text-gray-400"
-                    >
-                      Undo Set
-                    </Button>
+                <div className="flex items-center justify-center gap-4">
+                  {!workoutStarted ? (
                     <Button
                       variant="primary"
                       size="lg"
-                      onClick={handleSetComplete}
-                      disabled={currentProgress.completedSets >= currentProgress.totalSets}
+                      icon={Play}
+                      onClick={handleStartWorkout}
                       className="px-8"
                     >
-                      Complete Set
+                      Start Workout
                     </Button>
-                  </div>
+                  ) : (
+                    <>
+                      <Button
+                        variant={isTimerRunning ? "secondary" : "primary"}
+                        size="lg"
+                        icon={isTimerRunning ? Pause : Play}
+                        onClick={handlePauseResume}
+                        className="px-6"
+                      >
+                        {isTimerRunning ? 'Pause' : 'Resume'}
+                      </Button>
+                      
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        icon={RotateCcw}
+                        onClick={handleResetTimer}
+                        className="px-6"
+                      >
+                        Reset
+                      </Button>
+                      
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        icon={Trophy}
+                        onClick={handleCompleteWorkout}
+                        disabled={isCompleting}
+                        className="px-8 bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        {isCompleting ? 'Completing...' : 'Complete Workout'}
+                      </Button>
+                    </>
+                  )}
                 </div>
-              )}
-
-              {/* Exercise Notes */}
-              {currentExercise?.notes && (
-                <div className="mb-4 p-3 bg-gray-700 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <FileText className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-300">Exercise Notes</span>
-                  </div>
-                  <p className="text-gray-300 text-sm italic">{currentExercise.notes}</p>
-                </div>
-              )}
+              </div>
             </div>
           </Card>
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              icon={SkipBack}
-              onClick={() => setCurrentExerciseIndex(prev => prev - 1)}
-              disabled={!canGoPrevious}
-            >
-              Previous Exercise
-            </Button>
+          {/* Routine Description */}
+          {routine.description && (
+            <Card>
+              <div className="p-6">
+                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Workout Description
+                </h2>
+                <p className="text-gray-300 leading-relaxed">
+                  {routine.description}
+                </p>
+              </div>
+            </Card>
+          )}
 
-            {isWorkoutComplete ? (
-              <Button
-                variant="primary"
-                size="lg"
-                icon={Trophy}
-                onClick={handleCompleteWorkout}
-                disabled={isCompleting}
-                className="px-8"
-              >
-                {isCompleting ? 'Completing...' : 'Finish Workout'}
-              </Button>
-            ) : (
-              <Button
-                variant="secondary"
-                icon={SkipForward}
-                onClick={() => setCurrentExerciseIndex(prev => prev + 1)}
-                disabled={!canGoNext}
-              >
-                Next Exercise
-              </Button>
-            )}
-          </div>
+          {/* Exercises List */}
+          <Card>
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <Target className="w-5 h-5" />
+                Exercises ({routine.exercises.length})
+              </h2>
+              
+              <div className="space-y-4">
+                {routine.exercises.map((exercise: any, index: any) => (
+                  <div
+                    key={exercise.id || index}
+                    className="bg-gray-700 rounded-lg p-4"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                        {index + 1}
+                      </div>
+                      
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-white mb-2">
+                          {exercise.name}
+                        </h3>
+                        
+                        <div className="flex items-center gap-6 text-sm text-gray-400 mb-2">
+                          {exercise.sets && (
+                            <span className="flex items-center gap-1">
+                              <Target className="w-3 h-3" />
+                              <strong className="text-white">{exercise.sets}</strong> sets
+                            </span>
+                          )}
+                          {exercise.reps && (
+                            <span className="flex items-center gap-1">
+                              <strong className="text-white">{exercise.reps}</strong> reps
+                            </span>
+                          )}
+                        </div>
+                        
+                        {exercise.notes && (
+                          <p className="text-sm text-gray-300 italic bg-gray-600 p-2 rounded">
+                            💡 {exercise.notes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+
+          {/* Workout Notes */}
+          <Card>
+            <div className="p-6">
+              <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Workout Notes
+              </h2>
+              <TextArea
+                value={sessionNotes}
+                onChange={(e) => setSessionNotes(e.target.value)}
+                placeholder="How did this workout feel? Any observations, improvements, or thoughts..."
+                rows={4}
+                className="w-full"
+              />
+              <p className="text-xs text-gray-400 mt-2">
+                These notes will be saved with your completed workout
+              </p>
+            </div>
+          </Card>
+
+          {/* Workout Stats */}
+          <Card>
+            <div className="p-6">
+              <h2 className="text-lg font-bold text-white mb-4">Workout Stats</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-500">{routine.exercises.length}</div>
+                  <div className="text-sm text-gray-400">Exercises</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-500">{formatTime(timerSeconds)}</div>
+                  <div className="text-sm text-gray-400">Current Time</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-500">
+                    {routine.estimatedDuration || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-400">Est. Duration (min)</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-500">
+                    {routine.exercises.reduce((total: any, ex: { reps: any; }) => total + (ex.reps || 0), 0)}
+                  </div>
+                  <div className="text-sm text-gray-400">Total Reps</div>
+                </div>
+              </div>
+            </div>
+          </Card>
+
         </div>
       </div>
     </>

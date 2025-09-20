@@ -24,7 +24,8 @@ export function CreateEditRoutineModal({ isOpen, onClose, routine }: CreateEditR
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    videoUrl: ''
+    videoUrl: '',
+    estimatedDuration: ''
   });
 
   const [exercises, setExercises] = useState<ExerciseForm[]>([]);
@@ -36,11 +37,12 @@ export function CreateEditRoutineModal({ isOpen, onClose, routine }: CreateEditR
       setFormData({
         name: routine.name,
         description: routine.description,
-        videoUrl: routine.videoUrl || ''
+        videoUrl: routine.videoUrl || '',
+        estimatedDuration: routine.estimatedDuration?.toString() || ''
       });
       setExercises(routine.exercises.map(ex => ({ ...ex, tempId: crypto.randomUUID() })));
     } else {
-      setFormData({ name: '', description: '', videoUrl: '' });
+      setFormData({ name: '', description: '', videoUrl: '', estimatedDuration: '' });
       setExercises([]);
     }
     setVideoPreview('');
@@ -69,7 +71,6 @@ export function CreateEditRoutineModal({ isOpen, onClose, routine }: CreateEditR
       name: '',
       sets: 0,
       reps: 0,
-      duration: '',
       notes: ''
     };
     setExercises(prev => [...prev, newExercise]);
@@ -92,6 +93,7 @@ export function CreateEditRoutineModal({ isOpen, onClose, routine }: CreateEditR
     try {
       const routineData = {
         ...formData,
+        estimatedDuration: formData.estimatedDuration ? parseInt(formData.estimatedDuration) : undefined,
         exercises: exercises.map(({ tempId, ...ex }) => ex)
       };
 
@@ -159,6 +161,17 @@ export function CreateEditRoutineModal({ isOpen, onClose, routine }: CreateEditR
               </div>
             )}
           </div>
+
+          <Input
+            label="Estimated Duration (minutes)"
+            type="number"
+            value={formData.estimatedDuration}
+            onChange={(e) => setFormData(prev => ({ ...prev, estimatedDuration: e.target.value }))}
+            placeholder="30"
+            helperText="How long do you estimate this workout will take?"
+            min="1"
+            max="300"
+          />
         </div>
 
         {/* Exercises */}
@@ -236,15 +249,6 @@ export function CreateEditRoutineModal({ isOpen, onClose, routine }: CreateEditR
                     min="0"
                   />
 
-                  <div className="md:col-span-2">
-                    <Input
-                      label="Duration (optional)"
-                      value={exercise.duration || ''}
-                      onChange={(e) => updateExercise(exercise.tempId, { duration: e.target.value })}
-                      placeholder="e.g., 30 seconds, 2 minutes"
-                      helperText="For time-based exercises like planks or cardio"
-                    />
-                  </div>
 
                   <div className="md:col-span-2">
                     <TextArea

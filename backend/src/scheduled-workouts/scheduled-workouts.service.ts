@@ -163,12 +163,16 @@ export class ScheduledWorkoutsService {
     id: string,
     userId: string,
     notes?: string,
+    finalDuration?: number,
   ): Promise<ScheduledWorkout> {
     const scheduledWorkout = await this.findOne(id, userId);
 
     scheduledWorkout.completed = true;
     if (notes) {
       scheduledWorkout.notes = notes;
+    }
+    if (finalDuration !== undefined) {
+      scheduledWorkout.finalDuration = finalDuration;
     }
 
     return this.scheduledWorkoutRepository.save(scheduledWorkout);

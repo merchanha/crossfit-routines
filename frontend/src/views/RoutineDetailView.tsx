@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Edit3, Calendar, Clock, Target, FileText, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Play, Calendar, Clock, Target, FileText, CheckCircle } from 'lucide-react';
 import { Card, Button, useToast } from '../components';
 import { useRoutinesContext } from '../contexts/RoutinesContext';
 import { useScheduledWorkoutsContext } from '../contexts/ScheduledWorkoutsContext';
@@ -246,7 +246,7 @@ export function RoutineDetailView() {
                     <span>Est. Duration</span>
                   </div>
                   <span className="text-white font-medium">
-                    {Math.ceil(routine.exercises.length * 2.5)} min
+                    {routine.estimatedDuration ? `${routine.estimatedDuration} min` : 'Not set'}
                   </span>
                 </div>
                 
@@ -298,12 +298,6 @@ export function RoutineDetailView() {
                     {exercise.reps && (
                       <span className="flex items-center gap-1">
                         <strong className="text-white">{exercise.reps}</strong> reps
-                      </span>
-                    )}
-                    {exercise.duration && (
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <strong className="text-white">{exercise.duration}</strong>
                       </span>
                     )}
                   </div>

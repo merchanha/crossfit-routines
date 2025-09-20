@@ -266,12 +266,23 @@ export const scheduledWorkoutsApi = {
   },
 
   // Mark workout as completed
-  markCompleted: (id: string, notes?: string): Promise<ScheduledWorkout> => {
-    console.log("Marking workout as completed", { id, notes });
-    return apiRequest<ScheduledWorkout>(`/scheduled-workouts/${id}/complete`, {
-      method: "PATCH",
-      body: JSON.stringify({ notes }),
-    });
+  markCompleted: (
+    id: string,
+    notes?: string,
+    finalDuration?: number
+  ): Promise<ScheduledWorkout> => {
+    console.log("Marking workout as completed", { id, notes, finalDuration });
+    const queryParams = new URLSearchParams();
+    if (notes) queryParams.append("notes", notes);
+    if (finalDuration !== undefined)
+      queryParams.append("finalDuration", finalDuration.toString());
+
+    return apiRequest<ScheduledWorkout>(
+      `/scheduled-workouts/${id}/complete?${queryParams.toString()}`,
+      {
+        method: "PATCH",
+      }
+    );
   },
 
   // Delete scheduled workout

@@ -8,7 +8,7 @@ interface ScheduledWorkoutsContextType {
   error: string | null;
   scheduleWorkout: (routineId: string, date: Date, notes?: string) => Promise<ScheduledWorkout>;
   updateScheduledWorkout: (id: string, updates: Partial<ScheduledWorkout>) => Promise<ScheduledWorkout>;
-  markWorkoutCompleted: (id: string, completed: boolean) => Promise<ScheduledWorkout>;
+  markWorkoutCompleted: (id: string, notes?: string, finalDuration?: number) => Promise<ScheduledWorkout>;
   deleteScheduledWorkout: (id: string) => Promise<void>;
   getWorkoutsForDate: (date: Date) => ScheduledWorkout[];
   getWorkoutsForWeek: (startDate: Date) => ScheduledWorkout[];

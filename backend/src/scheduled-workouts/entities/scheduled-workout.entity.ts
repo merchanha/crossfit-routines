@@ -14,6 +14,9 @@ export class ScheduledWorkout extends BaseEntity {
   @Column({ default: false })
   completed: boolean;
 
+  @Column({ nullable: true })
+  finalDuration?: number; // Final duration in seconds when completed
+
   @Column()
   routineId: string;
 

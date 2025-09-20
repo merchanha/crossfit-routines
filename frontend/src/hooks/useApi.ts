@@ -257,12 +257,13 @@ export function useScheduledWorkouts() {
   );
 
   const markWorkoutCompleted = useCallback(
-    async (id: string, notes?: string) => {
+    async (id: string, notes?: string, finalDuration?: number) => {
       try {
         setError(null);
         const completedWorkout = await api.scheduledWorkouts.markCompleted(
           id,
-          notes
+          notes,
+          finalDuration
         );
         setScheduledWorkouts((prev) =>
           prev.map((workout) =>
