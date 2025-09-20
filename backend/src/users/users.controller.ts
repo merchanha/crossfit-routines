@@ -76,8 +76,9 @@ export class UsersController {
     status: 404,
     description: 'User not found',
   })
-  async getProfile(@CurrentUser() user: User): Promise<User> {
-    return this.usersService.findOne(user.id);
+  async getProfile(@UserId() userId: string): Promise<User> {
+    const user = await this.usersService.findOne(userId);
+    return user;
   }
 
   @Get('stats')
@@ -127,10 +128,10 @@ export class UsersController {
     description: 'Email already exists',
   })
   async updateProfile(
-    @CurrentUser() user: User,
+    @UserId() userId: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    return this.usersService.updateProfile(user.id, updateUserDto);
+    return this.usersService.updateProfile(userId, updateUserDto);
   }
 
   @Patch(':id')
