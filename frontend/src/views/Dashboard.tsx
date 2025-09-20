@@ -130,6 +130,7 @@ export function Dashboard() {
                     </div>
                   </div>
                    <Button 
+                    className={`${workout.completed ? 'bg-orange-400' : 'bg-emerald-500'}`}
                      variant={workout.completed ? 'danger' : 'primary'} 
                      size="sm"
                      onClick={() => {
