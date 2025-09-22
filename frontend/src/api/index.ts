@@ -88,7 +88,6 @@ export const authApi = {
 
   // Register new user
   register: async (userData: RegisterRequest): Promise<AuthResponse> => {
-    console.log("Registering new user", { email: userData.email });
     const response = await apiRequest<AuthResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(userData),
