@@ -15,7 +15,7 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  // Set global prefix
+  // Set global prefix test
   app.setGlobalPrefix('api');
 
   // Enable CORS
