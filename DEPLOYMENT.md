@@ -38,7 +38,8 @@ This guide will help you deploy your CrossFit Routines app to free services usin
      - **Name**: `crossfit-routines-api`
      - **Root Directory**: `backend`
      - **Environment**: `Node`
-     - **Build Command**: `npm install && npm run build`
+     - **Node Version**: `18`
+     - **Build Command**: `npm ci --include=dev && npx nest build`
      - **Start Command**: `npm run start:prod`
      - **Plan**: Free
 
