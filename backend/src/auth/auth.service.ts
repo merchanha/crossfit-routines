@@ -24,45 +24,59 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-    const { email, name, password } = registerDto;
+    try {
+      console.log('🔍 Register attempt:', { email: registerDto.email, name: registerDto.name });
+      
+      const { email, name, password } = registerDto;
 
-    // Check if user already exists
-    const existingUser = await this.userRepository.findOne({
-      where: { email },
-    });
+      // Check if user already exists
+      const existingUser = await this.userRepository.findOne({
+        where: { email },
+      });
 
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
-    }
+      if (existingUser) {
+        console.log('❌ User already exists:', email);
+        throw new ConflictException('User with this email already exists');
+      }
 
-    // Create new user
-    const user = this.userRepository.create({
-      email,
-      name,
-      password,
-    });
+      console.log('✅ User does not exist, creating new user...');
 
-    const savedUser = await this.userRepository.save(user);
+      // Create new user
+      const user = this.userRepository.create({
+        email,
+        name,
+        password,
+      });
 
-    // Generate JWT token
-    const payload: JwtPayload = {
-      sub: savedUser.id,
-      email: savedUser.email,
-    };
+      console.log('🔍 User created, saving to database...');
+      const savedUser = await this.userRepository.save(user);
+      console.log('✅ User saved successfully:', savedUser.id);
 
-    const accessToken = this.jwtService.sign(payload);
-
-    return {
-      accessToken,
-      tokenType: 'Bearer',
-      expiresIn: 604800, // 7 days in seconds
-      user: {
-        id: savedUser.id,
+      // Generate JWT token
+      const payload: JwtPayload = {
+        sub: savedUser.id,
         email: savedUser.email,
-        name: savedUser.name,
-        profilePicture: savedUser.profilePicture,
-      },
-    };
+      };
+
+      console.log('🔍 Generating JWT token...');
+      const accessToken = this.jwtService.sign(payload);
+      console.log('✅ JWT token generated successfully');
+
+      return {
+        accessToken,
+        tokenType: 'Bearer',
+        expiresIn: 604800, // 7 days in seconds
+        user: {
+          id: savedUser.id,
+          email: savedUser.email,
+          name: savedUser.name,
+          profilePicture: savedUser.profilePicture,
+        },
+      };
+    } catch (error) {
+      console.error('❌ Registration error:', error);
+      throw error;
+    }
   }
 
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
