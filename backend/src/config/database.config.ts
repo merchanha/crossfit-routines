@@ -8,9 +8,11 @@ export const getDatabaseConfig = (
 
   // If DATABASE_URL is provided (production), use it
   if (databaseUrl) {
+    console.log('✅ Using DATABASE_URL for connection');
     return {
       type: 'postgres',
       url: databaseUrl,
+      schema: 'public',
       entities: [__dirname + '/../**/*.entity{.ts,.js}'],
       synchronize: configService.get('NODE_ENV') === 'development',
       logging: configService.get('NODE_ENV') === 'development',
