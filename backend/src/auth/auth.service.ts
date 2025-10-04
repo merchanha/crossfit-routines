@@ -25,8 +25,11 @@ export class AuthService {
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
     try {
-      console.log('🔍 Register attempt:', { email: registerDto.email, name: registerDto.name });
-      
+      console.log('🔍 Register attempt:', {
+        email: registerDto.email,
+        name: registerDto.name,
+      });
+
       const { email, name, password } = registerDto;
 
       // Check if user already exists

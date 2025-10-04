@@ -22,6 +22,13 @@ async function bootstrap() {
   const corsOrigin = configService.get('CORS_ORIGIN');
   console.log('🔍 CORS Origin:', corsOrigin);
 
+  // Debug environment variables
+  console.log('🔍 Environment Variables:');
+  console.log('NODE_ENV:', configService.get('NODE_ENV'));
+  console.log('JWT_SECRET exists:', !!configService.get('JWT_SECRET'));
+  console.log('JWT_EXPIRES_IN:', configService.get('JWT_EXPIRES_IN'));
+  console.log('DATABASE_URL exists:', !!configService.get('DATABASE_URL'));
+
   app.enableCors({
     origin: corsOrigin,
     credentials: true,
