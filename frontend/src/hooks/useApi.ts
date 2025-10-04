@@ -39,6 +39,22 @@ export function useUser() {
     }
   }, []);
 
+  const uploadProfileImage = useCallback(
+    async (file: File) => {
+      try {
+        setError(null);
+        const result = await api.user.uploadProfileImage(file);
+        // Reload user data to get the updated profile picture
+        await loadUser();
+        return result;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to upload image");
+        throw err;
+      }
+    },
+    [loadUser]
+  );
+
   useEffect(() => {
     loadUser();
   }, [loadUser]);
@@ -48,6 +64,7 @@ export function useUser() {
     isLoading,
     error,
     updateUser,
+    uploadProfileImage,
     refetch: loadUser,
   };
 }

@@ -1,16 +1,35 @@
-import React, { useState } from 'react';
-import { User, Edit3, Trophy, Calendar, Flame, Target } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { User, Edit3, Trophy, Calendar, Flame, Target, Upload, X } from 'lucide-react';
 import { Card, Button, Input } from '../components';
 import { useUser } from '../hooks/useApi';
 import { useRoutinesContext } from '../contexts/RoutinesContext';
 import { useScheduledWorkoutsContext } from '../contexts/ScheduledWorkoutsContext';
 import { ScheduledWorkout } from '../types';
 
+// Utility function to get full image URL
+const getImageUrl = (imagePath: string | undefined): string => {
+  if (!imagePath) {
+    return 'https://images.pexels.com/photos/1431282/pexels-photo-1431282.jpeg?auto=compress&cs=tinysrgb&w=150';
+  }
+  
+  // If it's already a full URL (cloud storage), return as-is
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // For relative paths (local storage), prepend the backend URL
+  const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+  return `${backendUrl}${imagePath}`;
+};
+
 export function ProfileView() {
-  const { user, updateUser, isLoading: userLoading } = useUser();
+  const { user, updateUser, uploadProfileImage, isLoading: userLoading } = useUser();
   const { routines } = useRoutinesContext();
   const { scheduledWorkouts } = useScheduledWorkoutsContext();
   const [isEditing, setIsEditing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [editForm, setEditForm] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -38,16 +57,71 @@ export function ProfileView() {
     joinedDaysAgo: user ? Math.floor((new Date().getTime() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)) : 0
   };
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size must be less than 5MB');
+        return;
+      }
+
+      try {
+        setIsUploading(true);
+        
+        // Create preview first
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPreviewImage(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+
+        // Upload the image
+        const result = await uploadProfileImage(file);
+        setEditForm(prev => ({ ...prev, profilePicture: result.imageUrl }));
+        
+        // Clear the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        alert('Failed to upload image. Please try again.');
+        setPreviewImage(null);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setPreviewImage(null);
+    setEditForm(prev => ({ ...prev, profilePicture: '' }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSave = async () => {
     try {
+      setIsUploading(true);
       await updateUser({
         name: editForm.name,
         email: editForm.email,
         profilePicture: editForm.profilePicture
       });
       setIsEditing(false);
+      setPreviewImage(null);
     } catch (error) {
       console.error('Error updating profile:', error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -61,6 +135,10 @@ export function ProfileView() {
       });
     }
     setIsEditing(false);
+    setPreviewImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -85,13 +163,35 @@ export function ProfileView() {
               {/* Profile Picture */}
               <div className="relative">
                 <img
-                  src={isEditing ? editForm.profilePicture : (user?.profilePicture || 'https://images.pexels.com/photos/1431282/pexels-photo-1431282.jpeg?auto=compress&cs=tinysrgb&w=150')}
+                  src={previewImage || getImageUrl(isEditing ? editForm.profilePicture : user?.profilePicture)}
                   alt="Profile"
                   className="w-24 h-24 rounded-full object-cover border-4 border-emerald-500"
                 />
                 <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
                   <User className="w-4 h-4 text-white" />
                 </div>
+                {isEditing && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-2 bg-emerald-500 rounded-full hover:bg-emerald-600 transition-colors"
+                        title="Upload new image"
+                      >
+                        <Upload className="w-4 h-4 text-white" />
+                      </button>
+                      {previewImage && (
+                        <button
+                          onClick={handleRemoveImage}
+                          className="p-2 bg-red-500 rounded-full hover:bg-red-600 transition-colors"
+                          title="Remove image"
+                        >
+                          <X className="w-4 h-4 text-white" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Basic Info */}
@@ -117,11 +217,41 @@ export function ProfileView() {
                           value={editForm.email}
                           onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
                         />
-                        <Input
-                          label="Profile Picture URL"
-                          value={editForm.profilePicture}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, profilePicture: e.target.value }))}
-                        />
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-300">
+                            Profile Picture
+                          </label>
+                          <div className="flex items-center space-x-4">
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                            />
+                            <Button
+                              variant="secondary"
+                              icon={Upload}
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={isUploading}
+                            >
+                              {isUploading ? 'Uploading...' : 'Choose Image'}
+                            </Button>
+                            {previewImage && (
+                              <Button
+                                variant="ghost"
+                                icon={X}
+                                onClick={handleRemoveImage}
+                                className="text-red-400 hover:text-red-300"
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-400">
+                            Max 5MB. Supported formats: JPG, PNG, GIF
+                          </p>
+                        </div>
                       </div>
                     ) : (
                       <div>
@@ -150,8 +280,12 @@ export function ProfileView() {
                   <Button variant="ghost" onClick={handleCancel}>
                     Cancel
                   </Button>
-                  <Button variant="primary" onClick={handleSave}>
-                    Save Changes
+                  <Button 
+                    variant="primary" 
+                    onClick={handleSave}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </div>
               </div>

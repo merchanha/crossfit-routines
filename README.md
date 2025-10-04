@@ -52,6 +52,15 @@ DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
 DB_NAME=crossfit_db
+
+# Image Storage
+# Options: 'local' or 'cloudinary'
+IMAGE_STORAGE_PROVIDER=local
+
+# Cloudinary Configuration (only needed if IMAGE_STORAGE_PROVIDER=cloudinary)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 If you want different credentials, update both the `.env` and the docker-compose file or your running Postgres accordingly.

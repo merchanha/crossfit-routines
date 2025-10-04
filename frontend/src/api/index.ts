@@ -127,15 +127,48 @@ export const userApi = {
   updateProfile: (updates: Partial<User>): Promise<User> => {
     console.log("Updating user profile", updates);
     return apiRequest<User>("/users/profile", {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify(updates),
+    });
+  },
+
+  // Upload profile image
+  uploadProfileImage: (
+    file: File
+  ): Promise<{ message: string; imageUrl: string }> => {
+    console.log("Uploading profile image", {
+      fileName: file.name,
+      size: file.size,
+    });
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const url = `${API_BASE_URL}/users/profile/upload-image`;
+    const token = getToken();
+
+    return fetch(url, {
+      method: "POST",
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    }).then(async (response) => {
+      if (!response.ok) {
+        if (response.status === 401) {
+          removeToken();
+          window.location.href = "/login";
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
     });
   },
 
   // Get user stats
   getUserStats: (): Promise<User["stats"]> => {
     console.log("Getting user stats");
-    return apiRequest<User["stats"]>("/user/stats");
+    return apiRequest<User["stats"]>("/users/stats");
   },
 };
 

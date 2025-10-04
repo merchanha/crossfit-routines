@@ -10,7 +10,10 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -18,6 +21,7 @@ import {
   ApiBearerAuth,
   ApiParam,
   ApiQuery,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -132,6 +136,32 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
     return this.usersService.updateProfile(userId, updateUserDto);
+  }
+
+  @Post('profile/upload-image')
+  @UseInterceptors(FileInterceptor('image'))
+  @ApiOperation({ summary: 'Upload profile image' })
+  @ApiConsumes('multipart/form-data')
+  @ApiResponse({
+    status: 200,
+    description: 'Image uploaded successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        imageUrl: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid file or file too large',
+  })
+  async uploadProfileImage(
+    @UserId() userId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<{ message: string; imageUrl: string }> {
+    return this.usersService.uploadProfileImage(userId, file);
   }
 
   @Patch(':id')

@@ -4,7 +4,6 @@ import {
   MinLength,
   MaxLength,
   IsOptional,
-  IsUrl,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -37,11 +36,12 @@ export class CreateUserDto {
   password: string;
 
   @ApiProperty({
-    description: 'User profile picture URL',
-    example: 'https://example.com/profile.jpg',
+    description: 'User profile picture URL or path',
+    example:
+      'https://example.com/profile.jpg or /uploads/profiles/filename.jpg',
     required: false,
   })
   @IsOptional()
-  @IsUrl()
+  @IsString()
   profilePicture?: string;
 }
