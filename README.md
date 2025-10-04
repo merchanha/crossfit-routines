@@ -255,7 +255,29 @@ crossfit-routines/
 
 ---
 
-## 8) Notes
+## 8) Deployment
+
+### Quick Setup
+```bash
+# Run the setup script
+./scripts/setup-deployment.sh
+
+# Test deployment locally
+BACKEND_URL=http://localhost:3001 ./scripts/test-deployment.sh
+```
+
+### Production Deployment
+For detailed deployment instructions using free services (Render + Vercel), see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+**Services Used:**
+- **Backend**: Render (free tier)
+- **Frontend**: Vercel (free tier)
+- **Database**: PostgreSQL on Render (free tier)
+- **CI/CD**: GitHub Actions
+
+---
+
+## 9) Notes
 
 - Routine schema updates:
   - Removed per-exercise `duration`

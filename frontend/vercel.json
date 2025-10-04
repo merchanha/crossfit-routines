@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://crossfit-routines-api.onrender.com/api/$1"
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "https://crossfit-routines-api.onrender.com/api"
+  }
+}
