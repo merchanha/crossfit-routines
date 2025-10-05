@@ -45,7 +45,6 @@ export class RoutinesService {
       
       const routines = await this.routineRepository.find({
         where: { userId },
-        relations: ['scheduledWorkouts', 'notes'],
         order: { createdAt: 'DESC' },
       });
       
