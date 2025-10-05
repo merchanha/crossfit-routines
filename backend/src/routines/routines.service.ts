@@ -20,20 +20,41 @@ export class RoutinesService {
     createRoutineDto: CreateRoutineDto,
     userId: string,
   ): Promise<Routine> {
-    const routine = this.routineRepository.create({
-      ...createRoutineDto,
-      userId,
-    });
+    try {
+      console.log('🔍 Creating routine:', { createRoutineDto, userId });
+      
+      const routine = this.routineRepository.create({
+        ...createRoutineDto,
+        userId,
+      });
 
-    return this.routineRepository.save(routine);
+      console.log('🔍 Routine created, saving to database...');
+      const savedRoutine = await this.routineRepository.save(routine);
+      console.log('✅ Routine saved successfully:', savedRoutine.id);
+      
+      return savedRoutine;
+    } catch (error) {
+      console.error('❌ Error creating routine:', error);
+      throw error;
+    }
   }
 
   async findAll(userId: string): Promise<Routine[]> {
-    return this.routineRepository.find({
-      where: { userId },
-      relations: ['scheduledWorkouts', 'notes'],
-      order: { createdAt: 'DESC' },
-    });
+    try {
+      console.log('🔍 Finding routines for user:', userId);
+      
+      const routines = await this.routineRepository.find({
+        where: { userId },
+        relations: ['scheduledWorkouts', 'notes'],
+        order: { createdAt: 'DESC' },
+      });
+      
+      console.log('✅ Found routines:', routines.length);
+      return routines;
+    } catch (error) {
+      console.error('❌ Error finding routines:', error);
+      throw error;
+    }
   }
 
   async findOne(id: string, userId: string): Promise<Routine> {
