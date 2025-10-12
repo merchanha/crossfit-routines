@@ -5,7 +5,7 @@ This repository contains a full-stack CrossFit routines management application:
 - Backend: NestJS + TypeORM + PostgreSQL
 - Frontend: React (Vite) + TypeScript + TailwindCSS
 
-The app supports JWT authentication, routines management, workout scheduling, notes, a simplified workout session timer, and a workout history/progress view.
+The app supports JWT authentication, routines management, workout scheduling, notes, a simplified workout session timer, workout history/progress view, and **AI-powered features** (recommendations and routine generation).
 
 ## Prerequisites
 
@@ -61,7 +61,18 @@ IMAGE_STORAGE_PROVIDER=local
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
+
+# AI Features Configuration (optional - see backend/AI_ENV_VARIABLES.md for details)
+AI_PROVIDER=openai
+OPENAI_API_KEY=sk-proj-your-key-here
+OPENAI_MODEL=gpt-4-turbo-preview
+GEMINI_API_KEY=your-gemini-key-here
+GEMINI_MODEL=gemini-pro
+AI_RATE_LIMIT_REQUESTS_PER_DAY=3
+AI_ENABLE_CACHING=true
 ```
+
+> **Note**: AI features are optional. See `backend/AI_ENV_VARIABLES.md` for detailed configuration instructions and API key setup.
 
 If you want different credentials, update both the `.env` and the docker-compose file or your running Postgres accordingly.
 

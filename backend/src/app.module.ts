@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { RoutinesModule } from './routines/routines.module';
 import { ScheduledWorkoutsModule } from './scheduled-workouts/scheduled-workouts.module';
 import { NotesModule } from './notes/notes.module';
+import { AIModule } from './ai/ai.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
@@ -30,6 +31,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     RoutinesModule,
     ScheduledWorkoutsModule,
     NotesModule,
+    AIModule, // AI infrastructure module
   ],
   controllers: [],
   providers: [
