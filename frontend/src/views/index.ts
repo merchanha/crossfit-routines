@@ -7,3 +7,4 @@ export { WorkoutSessionView } from "./WorkoutSessionView";
 export { WorkoutHistoryView } from "./WorkoutHistoryView";
 export { CalendarView } from "./CalendarView";
 export { ProfileView } from "./ProfileView";
+export { RecommendationsView } from "./RecommendationsView";

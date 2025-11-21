@@ -11,6 +11,7 @@ import { RoutinesModule } from './routines/routines.module';
 import { ScheduledWorkoutsModule } from './scheduled-workouts/scheduled-workouts.module';
 import { NotesModule } from './notes/notes.module';
 import { AIModule } from './ai/ai.module';
+import { RecommendationsModule } from './recommendations/recommendations.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
@@ -32,6 +33,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     ScheduledWorkoutsModule,
     NotesModule,
     AIModule, // AI infrastructure module
+    RecommendationsModule, // AI-powered recommendations
   ],
   controllers: [],
   providers: [

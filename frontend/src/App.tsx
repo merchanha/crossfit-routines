@@ -4,7 +4,7 @@ import { AuthProvider, useAuthContext } from './contexts/AuthContext';
 import { RoutinesProvider } from './contexts/RoutinesContext';
 import { ScheduledWorkoutsProvider } from './contexts/ScheduledWorkoutsContext';
 import { Sidebar, MobileHeader, ProtectedRoute } from './components';
-import { AuthView, Dashboard, RoutinesLibrary, RoutineDetailView, WorkoutSessionView, WorkoutHistoryView, CalendarView, ProfileView } from './views';
+import { AuthView, Dashboard, RoutinesLibrary, RoutineDetailView, WorkoutSessionView, WorkoutHistoryView, CalendarView, ProfileView, RecommendationsView } from './views';
 
 function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -15,6 +15,7 @@ function AppContent() {
     switch (pathname) {
       case '/': return 'Dashboard';
       case '/routines': return 'Routines';
+      case '/recommendations': return 'AI Recommendations';
       case '/history': return 'Workout History';
       case '/calendar': return 'Calendar';
       case '/profile': return 'Profile';
@@ -62,6 +63,7 @@ function AppContent() {
                 <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/routines" element={<ProtectedRoute><RoutinesLibrary /></ProtectedRoute>} />
                 <Route path="/routines/:id" element={<ProtectedRoute><RoutineDetailView /></ProtectedRoute>} />
+                <Route path="/recommendations" element={<ProtectedRoute><RecommendationsView /></ProtectedRoute>} />
                 <Route path="/workout/:workoutId" element={<ProtectedRoute><WorkoutSessionView /></ProtectedRoute>} />
                 <Route path="/history" element={<ProtectedRoute><WorkoutHistoryView /></ProtectedRoute>} />
                 <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
