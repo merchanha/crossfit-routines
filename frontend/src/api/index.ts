@@ -6,6 +6,7 @@ import {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
+  Recommendation,
 } from "../types";
 
 // Base API configuration
@@ -382,6 +383,24 @@ export const notesApi = {
   },
 };
 
+// Recommendations API
+export const recommendationsApi = {
+  // Get recommendations
+  getRecommendations: (refresh?: boolean): Promise<Recommendation> => {
+    const queryParam = refresh ? "?refresh=true" : "";
+    console.log("Getting recommendations", { refresh });
+    return apiRequest<Recommendation>(`/recommendations${queryParam}`);
+  },
+
+  // Dismiss recommendation
+  dismiss: (recommendationId: string): Promise<void> => {
+    console.log("Dismissing recommendation", { recommendationId });
+    return apiRequest<void>(`/recommendations/${recommendationId}`, {
+      method: "DELETE",
+    });
+  },
+};
+
 // Combined API object
 export const api = {
   auth: authApi,
@@ -389,4 +408,5 @@ export const api = {
   routines: routinesApi,
   scheduledWorkouts: scheduledWorkoutsApi,
   notes: notesApi,
+  recommendations: recommendationsApi,
 };

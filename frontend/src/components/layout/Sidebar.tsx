@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Calendar, User, Menu, X, LogOut, BarChart3 } from 'lucide-react';
+import { Home, BookOpen, Calendar, User, Menu, X, LogOut, BarChart3, Sparkles } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { AuthUser } from '../../types';
 
@@ -15,6 +15,7 @@ interface SidebarProps {
 const navigationItems = [
   { path: '/', label: 'Dashboard', icon: Home },
   { path: '/routines', label: 'Routines', icon: BookOpen },
+  { path: '/recommendations', label: 'AI Recommendations', icon: Sparkles },
   { path: '/calendar', label: 'Calendar', icon: Calendar },
   { path: '/history', label: 'History', icon: BarChart3 },
   { path: '/profile', label: 'Profile', icon: User },

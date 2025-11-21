@@ -79,3 +79,50 @@ export interface WorkoutNote {
   content: string;
   userId: string;
 }
+
+// Recommendations types
+export interface PerformanceAnalysis {
+  averageDelta: number;
+  totalWorkouts: number;
+  completedWorkouts: number;
+  completionRate: number;
+  strengths: string[];
+  weaknesses: string[];
+  trends: {
+    improving?: boolean;
+    declining?: boolean;
+    stable?: boolean;
+  };
+  workoutHistory: Array<{
+    routineName: string;
+    estimatedDuration: number;
+    averageFinalDuration: number;
+    delta: number;
+    completionCount: number;
+  }>;
+}
+
+export interface RecommendationItem {
+  id: string;
+  itemType: "existing" | "ai_generated";
+  routineId?: string;
+  reasoning?: string;
+  priority: number;
+  routine?: Routine;
+  routineData?: {
+    name: string;
+    description: string;
+    estimatedDuration?: number;
+    exercises: Exercise[];
+    videoUrl?: string;
+  };
+}
+
+export interface Recommendation {
+  id: string;
+  performanceAnalysis: PerformanceAnalysis;
+  items: RecommendationItem[];
+  status: string;
+  expiresAt?: Date;
+  createdAt: Date;
+}
