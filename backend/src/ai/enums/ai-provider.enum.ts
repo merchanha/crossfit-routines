@@ -18,6 +18,7 @@ export enum AIProvider {
  */
 export enum AIInteractionType {
   RECOMMENDATION = 'recommendation',
+  ROUTINE_GENERATION = 'routine_generation',
   GENERATION = 'generation',
   CHAT = 'chat', // For future chat features
 }

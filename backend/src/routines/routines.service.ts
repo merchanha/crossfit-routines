@@ -22,16 +22,17 @@ export class RoutinesService {
   ): Promise<Routine> {
     try {
       console.log('🔍 Creating routine:', { createRoutineDto, userId });
-      
+
       const routine = this.routineRepository.create({
         ...createRoutineDto,
         userId,
+        aiGenerated: false, // Default to false, can be updated later
       });
 
       console.log('🔍 Routine created, saving to database...');
       const savedRoutine = await this.routineRepository.save(routine);
       console.log('✅ Routine saved successfully:', savedRoutine.id);
-      
+
       return savedRoutine;
     } catch (error) {
       console.error('❌ Error creating routine:', error);
@@ -42,12 +43,12 @@ export class RoutinesService {
   async findAll(userId: string): Promise<Routine[]> {
     try {
       console.log('🔍 Finding routines for user:', userId);
-      
+
       const routines = await this.routineRepository.find({
         where: { userId },
         order: { createdAt: 'DESC' },
       });
-      
+
       console.log('✅ Found routines:', routines.length);
       return routines;
     } catch (error) {

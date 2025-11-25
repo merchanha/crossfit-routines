@@ -401,6 +401,46 @@ export const recommendationsApi = {
   },
 };
 
+// Generator API
+export interface GenerateRoutineRequest {
+  prompt: string;
+  saveToLibrary?: boolean;
+  preferences?: {
+    difficulty?: "beginner" | "intermediate" | "advanced";
+    equipment?: "minimal" | "full" | "none";
+    focus?: string;
+  };
+}
+
+export interface GeneratedRoutine {
+  id: string;
+  name: string;
+  description: string;
+  estimatedDuration?: number;
+  videoUrl?: string;
+  exercises: Array<{
+    id: string;
+    name: string;
+    sets?: number;
+    reps?: number;
+    notes?: string;
+  }>;
+  saved?: boolean;
+  routineId?: string;
+}
+
+export const generatorApi = {
+  generateRoutine: (
+    request: GenerateRoutineRequest
+  ): Promise<GeneratedRoutine> => {
+    console.log("Generating routine with AI", { prompt: request.prompt });
+    return apiRequest<GeneratedRoutine>("/generator/generate", {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
+  },
+};
+
 // Combined API object
 export const api = {
   auth: authApi,
@@ -409,4 +449,5 @@ export const api = {
   scheduledWorkouts: scheduledWorkoutsApi,
   notes: notesApi,
   recommendations: recommendationsApi,
+  generator: generatorApi,
 };
