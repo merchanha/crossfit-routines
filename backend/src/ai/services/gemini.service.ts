@@ -185,7 +185,7 @@ export class GeminiService extends AIProviderInterface {
     }
 
     const temperature = options?.temperature ?? 0.7;
-    const maxTokens = options?.maxTokens || 2000;
+    const maxTokens = options?.maxTokens || 4000; // Increased to prevent truncation
 
     this.logger.debug(`Generating structured output with Gemini`);
 
@@ -225,32 +225,111 @@ export class GeminiService extends AIProviderInterface {
 
       let rawContent = result.response.text();
 
+      // Log full raw response for debugging (important for troubleshooting)
+      this.logger.debug(
+        `Gemini raw response (full, ${rawContent.length} chars): ${rawContent}`,
+      );
+
       // Gemini sometimes wraps JSON in markdown code blocks, clean it up
       rawContent = this.cleanJsonResponse(rawContent);
 
       const tokensUsed = this.estimateTokens(fullPrompt + rawContent);
 
-      // Parse JSON
+      // Parse JSON with improved extraction
       let parsedData: T;
       try {
         parsedData = JSON.parse(rawContent);
       } catch (parseError) {
-        this.logger.error(
-          'Failed to parse Gemini response as JSON:',
-          rawContent,
+        this.logger.warn(
+          `Initial JSON parse failed, attempting extraction. Error: ${parseError.message}`,
         );
+        this.logger.debug(`Full response length: ${rawContent.length} chars`);
 
-        // Try to extract JSON from the response
-        const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
+        // Try multiple extraction strategies
+        let extractedJson: string | null = null;
+
+        // Strategy 1: Try to find the largest valid JSON object
+        // Look for all potential JSON objects in the response
+        const jsonMatches: string[] = [];
+        let startIndex = 0;
+
+        while (true) {
+          const jsonStart = rawContent.indexOf('{', startIndex);
+          if (jsonStart === -1) break;
+
+          // Try to find the matching closing brace
+          let braceCount = 0;
+          let endIndex = -1;
+          for (let i = jsonStart; i < rawContent.length; i++) {
+            if (rawContent[i] === '{') braceCount++;
+            if (rawContent[i] === '}') braceCount--;
+            if (braceCount === 0) {
+              endIndex = i + 1;
+              break;
+            }
+          }
+
+          if (endIndex > jsonStart) {
+            const potentialJson = rawContent.substring(jsonStart, endIndex);
+            if (this.isValidJson(potentialJson)) {
+              jsonMatches.push(potentialJson);
+            }
+          }
+
+          startIndex = jsonStart + 1;
+        }
+
+        // Use the longest valid JSON match
+        if (jsonMatches.length > 0) {
+          extractedJson = jsonMatches.reduce((a, b) =>
+            a.length > b.length ? a : b,
+          );
+          this.logger.debug(
+            `Found ${jsonMatches.length} potential JSON objects, using longest (${extractedJson.length} chars)`,
+          );
+        }
+
+        // Strategy 2: If no valid JSON found, try simple regex match
+        if (!extractedJson) {
+          const jsonObjectMatch = rawContent.match(/\{[\s\S]*\}/);
+          if (jsonObjectMatch) {
+            extractedJson = jsonObjectMatch[0];
+            this.logger.debug('Using regex match as fallback');
+          }
+        }
+
+        // Strategy 3: Try to complete incomplete JSON (if truncated)
+        if (extractedJson && !this.isValidJson(extractedJson)) {
+          // Try to close unclosed arrays/objects
+          extractedJson = this.tryCompleteJson(extractedJson);
+        }
+
+        if (extractedJson) {
           try {
-            parsedData = JSON.parse(jsonMatch[0]);
-            rawContent = jsonMatch[0];
-          } catch {
-            throw new Error('Gemini returned invalid JSON');
+            parsedData = JSON.parse(extractedJson);
+            rawContent = extractedJson;
+            this.logger.log('✅ Successfully extracted and parsed JSON');
+          } catch (extractError) {
+            this.logger.error(
+              `Failed to parse extracted JSON: ${extractError.message}`,
+            );
+            this.logger.error(
+              `Extracted JSON (first 500 chars): ${extractedJson.substring(0, 500)}`,
+            );
+            throw new Error(
+              `Gemini returned invalid JSON. Extraction failed: ${extractError.message}`,
+            );
           }
         } else {
-          throw new Error('Gemini returned invalid JSON');
+          this.logger.error(
+            `Could not extract JSON from response. Response length: ${rawContent.length}`,
+          );
+          this.logger.error(
+            `Response preview: ${rawContent.substring(0, 200)}...`,
+          );
+          throw new Error(
+            'Gemini returned invalid JSON - could not extract JSON object',
+          );
         }
       }
 
@@ -297,7 +376,7 @@ export class GeminiService extends AIProviderInterface {
 
     // Remove markdown code blocks if present
     if (cleaned.startsWith('```json')) {
-      cleaned = cleaned.replace(/^```json\s*/, '');
+      cleaned = cleaned.replace(/^```json\s*/i, '');
     }
     if (cleaned.startsWith('```')) {
       cleaned = cleaned.replace(/^```\s*/, '');
@@ -306,6 +385,56 @@ export class GeminiService extends AIProviderInterface {
       cleaned = cleaned.replace(/\s*```$/, '');
     }
 
+    // Remove any leading/trailing text that's not JSON
+    // Find the first { and last } to extract just the JSON
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+
+    if (firstBrace > -1 && lastBrace > firstBrace) {
+      cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+    }
+
     return cleaned.trim();
+  }
+
+  /**
+   * Check if a string is valid JSON
+   */
+  private isValidJson(str: string): boolean {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Try to complete incomplete JSON (if truncated)
+   */
+  private tryCompleteJson(json: string): string {
+    // Count unclosed braces and brackets
+    let openBraces = 0;
+    let openBrackets = 0;
+
+    for (const char of json) {
+      if (char === '{') openBraces++;
+      if (char === '}') openBraces--;
+      if (char === '[') openBrackets++;
+      if (char === ']') openBrackets--;
+    }
+
+    // Close unclosed structures
+    let completed = json;
+    while (openBrackets > 0) {
+      completed += ']';
+      openBrackets--;
+    }
+    while (openBraces > 0) {
+      completed += '}';
+      openBraces--;
+    }
+
+    return completed;
   }
 }

@@ -19,3 +19,6 @@ export { ProtectedRoute } from "./auth/ProtectedRoute";
 export { CreateEditRoutineModal } from "./routines/CreateEditRoutineModal";
 export { ScheduleWorkoutModal } from "./calendar/ScheduleWorkoutModal";
 export { WorkoutDetailsPanel } from "./calendar/WorkoutDetailsPanel";
+
+// Generator Components
+export { AIGeneratorModal, GeneratedRoutinePreview } from "./generator";

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Play, Edit3, Eye } from 'lucide-react';
-import { Card, Button, Input, CreateEditRoutineModal } from '../components';
+import { Search, Plus, Play, Edit3, Eye, Sparkles } from 'lucide-react';
+import { Card, Button, Input, CreateEditRoutineModal, AIGeneratorModal } from '../components';
 import { useRoutinesContext } from '../contexts/RoutinesContext';
 import { Routine } from '../types';
+import { GeneratedRoutine } from '../api';
 
 interface RoutinesLibraryProps {
   onRoutineSelect?: (routine: Routine) => void;
@@ -11,9 +12,10 @@ interface RoutinesLibraryProps {
 
 export function RoutinesLibrary({ onRoutineSelect }: RoutinesLibraryProps) {
   const navigate = useNavigate();
-  const { routines } = useRoutinesContext();
+  const { routines, createRoutine } = useRoutinesContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAIGeneratorModal, setShowAIGeneratorModal] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<Routine | null>(null);
 
   const filteredRoutines = routines.filter(routine =>
@@ -40,13 +42,22 @@ export function RoutinesLibrary({ onRoutineSelect }: RoutinesLibraryProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Routines Library</h1>
-        <Button
-          variant="primary"
-          icon={Plus}
-          onClick={() => setShowCreateModal(true)}
-        >
-          Create New Routine
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            variant="secondary"
+            icon={Sparkles}
+            onClick={() => setShowAIGeneratorModal(true)}
+          >
+            Generate with AI
+          </Button>
+          <Button
+            variant="primary"
+            icon={Plus}
+            onClick={() => setShowCreateModal(true)}
+          >
+            Create New Routine
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -181,6 +192,29 @@ export function RoutinesLibrary({ onRoutineSelect }: RoutinesLibraryProps) {
           setEditingRoutine(null);
         }}
         routine={editingRoutine}
+      />
+
+      {/* AI Generator Modal */}
+      <AIGeneratorModal
+        isOpen={showAIGeneratorModal}
+        onClose={() => setShowAIGeneratorModal(false)}
+        onSave={async (generatedRoutine: GeneratedRoutine) => {
+          try {
+            // Convert GeneratedRoutine to CreateRoutineDto format
+            const routineToCreate: any = {
+              name: generatedRoutine.name,
+              description: generatedRoutine.description,
+              estimatedDuration: generatedRoutine.estimatedDuration,
+              videoUrl: generatedRoutine.videoUrl,
+              exercises: generatedRoutine.exercises,
+            };
+            
+            await createRoutine(routineToCreate);
+            setShowAIGeneratorModal(false);
+          } catch (error) {
+            console.error('Failed to save generated routine:', error);
+          }
+        }}
       />
     </div>
   );
